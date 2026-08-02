@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>けいさんクエスト 3.14の迷宮</title>
+<style>
+:root{
+  --bg1:#2b1e5e; --bg2:#4a2d8f; --card:#ffffff12; --card2:#ffffff1f;
+  --ink:#fff; --sub:#cfc4ff; --gold:#ffd45e; --pink:#ff7bb0; --mint:#5ef2c8;
+  --danger:#ff5e7a; --btn:#7c5cff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+html,body{height:100%}
+body{font-family:"Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#6a3aa0);color:var(--ink);
+  min-height:100dvh;overflow-x:hidden}
+.wrap{max-width:520px;margin:0 auto;padding:14px 14px 30px;min-height:100dvh;display:flex;flex-direction:column}
+.scr{display:none;flex:1;flex-direction:column}
+.scr.on{display:flex}
+button{font-family:inherit;border:none;cursor:pointer;color:var(--ink)}
+.btn{background:var(--btn);border-radius:16px;padding:14px 18px;font-size:17px;font-weight:800;
+  box-shadow:0 4px 0 #5232c8;transition:transform .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #5232c8}
+.btn.gold{background:linear-gradient(180deg,#ffd45e,#ffb020);color:#5a3b00;box-shadow:0 4px 0 #c67f00}
+.btn.gold:active{box-shadow:0 1px 0 #c67f00}
+.btn.ghost{background:var(--card2);box-shadow:0 4px 0 #00000030}
+.btn.ghost:active{box-shadow:0 1px 0 #00000030}
+.btn:disabled{opacity:.4;pointer-events:none}
+.row{display:flex;gap:10px}
+h1.logo{font-size:34px;text-align:center;margin:10px 0 2px;letter-spacing:2px;
+  text-shadow:0 3px 0 #00000040}
+.logo small{display:block;font-size:14px;color:var(--sub);letter-spacing:6px;margin-top:4px}
+.pcard{background:var(--card);border-radius:18px;padding:12px 16px;margin:14px 0;display:flex;align-items:center;gap:12px}
+.pcard .face{font-size:34px}
+.pcard .info{flex:1}
+.pcard .lv{font-weight:800;font-size:15px}
+.xpbar{height:8px;background:#00000040;border-radius:99px;margin-top:5px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),#4ecdf5);border-radius:99px;transition:width .4s}
+.coins{font-weight:800;color:var(--gold);font-size:16px;white-space:nowrap}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.wbtn{border-radius:18px;padding:14px 10px;text-align:center;font-weight:800;font-size:15px;
+  background:var(--card2);box-shadow:0 4px 0 #00000030;position:relative}
+.wbtn:active{transform:translateY(2px)}
+.wbtn .em{font-size:32px;display:block;margin-bottom:4px}
+.wbtn .st{display:block;font-size:12px;margin-top:4px;color:var(--gold);letter-spacing:2px}
+.wbtn.mul{background:linear-gradient(160deg,#5e8f3b99,#2e5e1e99)}
+.wbtn.div{background:linear-gradient(160deg,#2e6ea099,#123e6e99)}
+.wbtn.add{background:linear-gradient(160deg,#8f6ecf99,#5e3aa099)}
+.wbtn.sub{background:linear-gradient(160deg,#b0502e99,#7a201299)}
+.tower{width:100%;margin:2px 0 12px;border-radius:18px;padding:14px;text-align:center;font-weight:800;font-size:16px;
+  background:linear-gradient(160deg,#3b3b6e,#191936);box-shadow:0 4px 0 #00000050;position:relative}
+.tower.locked{filter:grayscale(.7);opacity:.75}
+.menu3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.menu3 .btn{font-size:14px;padding:12px 6px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.top .back{background:var(--card2);border-radius:12px;padding:8px 14px;font-weight:800;font-size:15px}
+.top .ttl{font-weight:800;font-size:18px;flex:1;text-align:center}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.stbtn{border-radius:18px;padding:18px 10px;text-align:center;font-weight:800;font-size:16px;
+  background:var(--card2);box-shadow:0 4px 0 #00000030}
+.stbtn .em{font-size:30px;display:block;margin-bottom:6px}
+.stbtn .stars{display:block;margin-top:6px;color:var(--gold);font-size:14px;letter-spacing:2px}
+.stbtn.locked{opacity:.4;pointer-events:none}
+.stbtn.bossb{grid-column:1/3;background:linear-gradient(160deg,#a02e5e99,#5e123699)}
+/* battle */
+.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:800}
+.hearts{font-size:20px;letter-spacing:2px}
+.combo{color:var(--gold);font-size:15px;min-width:90px;text-align:right}
+.arena{position:relative;background:var(--card);border-radius:20px;padding:14px 14px 10px;text-align:center;margin-bottom:10px;overflow:hidden}
+.ename{font-weight:800;font-size:14px;color:var(--sub)}
+.enemy{font-size:74px;line-height:1.15;display:inline-block;transition:transform .1s;filter:drop-shadow(0 6px 8px #00000060)}
+.enemy.hit{animation:hitshake .3s}
+.enemy.die{animation:die .45s forwards}
+@keyframes hitshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px) rotate(-6deg)}60%{transform:translateX(8px) rotate(5deg)}}
+@keyframes die{to{transform:scale(0) rotate(360deg);opacity:0}}
+.hpbar{height:12px;background:#00000050;border-radius:99px;margin:6px 18px 2px;overflow:hidden}
+.hpbar i{display:block;height:100%;background:linear-gradient(90deg,#ff5e7a,#ff9a5e);border-radius:99px;transition:width .25s}
+.hptxt{font-size:12px;color:var(--sub);font-weight:800}
+.buddy{position:absolute;left:12px;bottom:8px;font-size:30px;filter:drop-shadow(0 3px 4px #00000060)}
+.dmg{position:absolute;font-weight:900;font-size:26px;color:#ffd45e;text-shadow:0 2px 0 #00000080;pointer-events:none;animation:dmgfly .8s forwards}
+.dmg.crit{color:#ff7bb0;font-size:34px}
+@keyframes dmgfly{0%{opacity:0;transform:translateY(6px) scale(.6)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+.qcard{background:#fff;color:#2b1e5e;border-radius:20px;padding:14px 10px;text-align:center;margin-bottom:10px;
+  box-shadow:0 6px 0 #00000030}
+.qtext{font-size:38px;font-weight:900;letter-spacing:2px;display:flex;align-items:center;justify-content:center;gap:12px;min-height:56px}
+.frac{display:inline-flex;flex-direction:column;line-height:1.02;font-size:.62em;vertical-align:middle}
+.frac .fn{border-bottom:3px solid currentColor;padding:0 4px}
+.frac .fd{padding:0 4px}
+.ansbox{margin-top:6px;font-size:30px;font-weight:900;min-height:44px;color:#7c5cff;
+  border-bottom:4px dashed #cfc4ff;display:inline-block;min-width:150px;padding:0 10px}
+.ansbox .cur{animation:blink 1s infinite;color:#cfc4ff}
+@keyframes blink{50%{opacity:0}}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:auto}
+.key{background:#ffffff22;border-radius:14px;padding:16px 0;font-size:24px;font-weight:800;box-shadow:0 3px 0 #00000040}
+.key:active{transform:translateY(2px);box-shadow:0 1px 0 #00000040}
+.key.ok{background:var(--mint);color:#0a4636;grid-row:span 2;font-size:22px}
+.key.del{background:#ffffff2e;font-size:20px}
+.fb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:50}
+.fb.on{display:flex}
+.fb .msg{font-size:40px;font-weight:900;text-shadow:0 3px 0 #00000060;animation:popin .35s}
+@keyframes popin{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.fb .sub2{position:absolute;top:58%;left:0;right:0;text-align:center;font-size:26px;font-weight:900;color:#fff}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
+.flash.go{animation:fl .25s}
+@keyframes fl{0%{opacity:.75}100%{opacity:0}}
+body.shake{animation:bodyshake .3s}
+@keyframes bodyshake{25%{transform:translate(-6px,2px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,1px)}}
+/* result */
+.result{text-align:center;margin-top:26px}
+.result .big{font-size:34px;font-weight:900;margin-bottom:8px}
+.result .starrow{font-size:44px;letter-spacing:6px;margin:10px 0;color:var(--gold)}
+.result .rew{background:var(--card);border-radius:16px;padding:14px;margin:14px 0;font-size:16px;font-weight:800;line-height:2}
+/* gacha */
+.gstage{text-align:center;margin:22px 0;min-height:170px}
+.egg{font-size:100px;display:inline-block}
+.egg.shake2{animation:eggshake .7s}
+@keyframes eggshake{0%,100%{transform:rotate(0)}20%{transform:rotate(-14deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-9deg)}80%{transform:rotate(7deg)}}
+.gres{display:none;animation:popin .4s}
+.gres .bem{font-size:90px;display:block}
+.gres .bname{font-size:22px;font-weight:900;margin-top:4px}
+.gres .brar{color:var(--gold);font-size:20px;letter-spacing:3px}
+.zgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.zcell{background:var(--card);border-radius:14px;padding:10px 4px;text-align:center;position:relative}
+.zcell .ze{font-size:34px;display:block}
+.zcell.no .ze{filter:grayscale(1) brightness(.4)}
+.zcell .zn{font-size:10px;font-weight:800;margin-top:2px;display:block}
+.zcell .zr{font-size:10px;color:var(--gold)}
+.zcell.eq{outline:3px solid var(--mint);border-radius:14px}
+.zcell.eq::after{content:"そうび中";position:absolute;top:-8px;right:-4px;background:var(--mint);color:#0a4636;
+  font-size:9px;font-weight:900;border-radius:8px;padding:2px 5px}
+/* timeattack */
+.tatime{font-size:44px;font-weight:900;text-align:center;color:var(--mint);margin:4px 0}
+.taprog{text-align:center;font-weight:800;color:var(--sub);margin-bottom:6px}
+.tarec{background:var(--card);border-radius:14px;padding:10px 14px;margin-top:10px;font-size:14px;line-height:1.9}
+/* confetti */
+.conf{position:fixed;top:-20px;font-size:20px;z-index:60;pointer-events:none;animation:confall linear forwards}
+@keyframes confall{to{transform:translateY(110vh) rotate(720deg)}}
+.toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);background:#ffd45e;color:#5a3b00;
+  font-weight:900;font-size:18px;padding:10px 22px;border-radius:99px;z-index:70;box-shadow:0 4px 12px #00000060;
+  animation:toastin 1.6s forwards}
+@keyframes toastin{0%{transform:translate(-50%,-30px);opacity:0}15%{transform:translate(-50%,0);opacity:1}80%{opacity:1}100%{opacity:0}}
+.cert{background:#fffef5;color:#3b2c10;border-radius:18px;padding:26px 18px;text-align:center;margin-top:20px;
+  border:6px double #c9a961}
+.cert h2{font-size:24px;margin-bottom:10px}
+.cert p{font-size:14px;line-height:2}
+.mute{position:absolute;top:14px;right:14px;font-size:20px;background:var(--card2);border-radius:12px;padding:6px 10px}
+.note{font-size:12px;color:var(--sub);text-align:center;margin-top:10px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="flash" id="flash"></div>
+<div class="fb" id="fb"><div class="msg" id="fbmsg"></div><div class="sub2" id="fbsub"></div></div>
+
+<div class="wrap">
+
+<!-- HOME -->
+<section class="scr on" id="scr-home" style="position:relative">
+  <button class="mute" id="muteBtn">🔊</button>
+  <h1 class="logo">けいさんクエスト<small>〜 3.14 の迷宮 〜</small></h1>
+  <div class="pcard">
+    <span class="face" id="pFace">🧝‍♀️</span>
+    <div class="info">
+      <div class="lv">Lv.<span id="pLv">1</span> けいさん見習い</div>
+      <div class="xpbar"><i id="pXp" style="width:0%"></i></div>
+    </div>
+    <span class="coins">🪙 <span id="pCoins">0</span></span>
+  </div>
+  <div class="wgrid" id="worldGrid"></div>
+  <button class="tower locked" id="towerBtn">🗼 さいごの塔 <span id="towerNote" style="font-size:12px;display:block;color:var(--sub)">4つの世界のボスをたおすと開く</span></button>
+  <div class="menu3">
+    <button class="btn ghost" id="taBtn">⏱️<br>タイムアタック</button>
+    <button class="btn gold" id="gachaBtn">🥚<br>ガチャ</button>
+    <button class="btn ghost" id="zukanBtn">📖<br>なかま図鑑</button>
+  </div>
+  <p class="note">ここに出てくる数字は、ぜんぶ中学入試の計算で本当に使う数字だよ。<br>たおしながら覚えれば、そのままテストの武器になる！</p>
+</section>
+
+<!-- STAGE SELECT -->
+<section class="scr" id="scr-stage">
+  <div class="top"><button class="back" data-go="home">← もどる</button><div class="ttl" id="stTitle"></div><div style="width:70px"></div></div>
+  <div class="stgrid" id="stGrid"></div>
+</section>
+
+<!-- BATTLE -->
+<section class="scr" id="scr-battle">
+  <div class="hud">
+    <span class="hearts" id="hearts">❤️❤️❤️</span>
+    <span id="bStage" style="font-size:13px;color:var(--sub)"></span>
+    <span class="combo" id="combo"></span>
+  </div>
+  <div class="arena" id="arena">
+    <div class="ename" id="eName"></div>
+    <span class="enemy" id="eFace">🍄</span>
+    <div class="hpbar"><i id="eHp" style="width:100%"></i></div>
+    <div class="hptxt" id="eHpTxt"></div>
+    <span class="buddy" id="bBuddy"></span>
+  </div>
+  <div class="qcard">
+    <div class="qtext" id="qText"></div>
+    <div><span class="ansbox" id="ansBox"><span class="cur">|</span></span></div>
+  </div>
+  <div class="pad">
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key del" data-k="del">⌫</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key ok" data-k="ok">こうげき<br>⚔️</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k="0">0</button><button class="key" data-k=".">・</button>
+    <button class="key del" data-k="esc" style="font-size:13px">にげる</button>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section class="scr" id="scr-result">
+  <div class="result">
+    <div class="big" id="rBig">クリア！</div>
+    <div class="starrow" id="rStars"></div>
+    <div class="rew" id="rRew"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn ghost" data-go="home">ホーム</button>
+      <button class="btn" id="rNext">つぎへ ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- GACHA -->
+<section class="scr" id="scr-gacha">
+  <div class="top"><button class="back" data-go="home">← もどる</button><div class="ttl">なかまガチャ</div><span class="coins">🪙 <span id="gCoins">0</span></span></div>
+  <div class="gstage">
+    <span class="egg" id="egg">🥚</span>
+    <div class="gres" id="gRes"><span class="bem" id="gEm"></span><span class="bname" id="gName"></span><div class="brar" id="gRar"></div><div id="gDup" style="color:var(--sub);font-size:13px;margin-top:4px"></div></div>
+  </div>
+  <button class="btn gold" id="pullBtn" style="width:100%">🪙 50 でガチャをまわす</button>
+  <p class="note">なかまをそうびすると、こうげき力アップ！<br>★が多いほど強い。バトルでコインをためよう</p>
+</section>
+
+<!-- ZUKAN -->
+<section class="scr" id="scr-zukan">
+  <div class="top"><button class="back" data-go="home">← もどる</button><div class="ttl">なかま図鑑</div><div style="width:70px"></div></div>
+  <p class="note" style="margin:0 0 4px">タップでそうび！（こうげき力 ★1:+2 ★2:+5 ★3:+10）</p>
+  <div class="zgrid" id="zGrid"></div>
+</section>
+
+<!-- TIME ATTACK select -->
+<section class="scr" id="scr-tasel">
+  <div class="top"><button class="back" data-go="home">← もどる</button><div class="ttl">⏱️ タイムアタック</div><div style="width:70px"></div></div>
+  <p class="note" style="margin-bottom:10px">紙のドリルと同じ36問を全問クリアするまでのタイムに挑戦！<br>まちがえると +5秒ペナルティ</p>
+  <div class="stgrid" id="taGrid"></div>
+  <div class="tarec" id="taRecs"></div>
+</section>
+
+<!-- TIME ATTACK run -->
+<section class="scr" id="scr-ta">
+  <div class="top"><button class="back" id="taQuit">← やめる</button><div class="ttl" id="taTitle"></div><div style="width:70px"></div></div>
+  <div class="tatime" id="taTime">0.0</div>
+  <div class="taprog" id="taProg"></div>
+  <div class="qcard">
+    <div class="qtext" id="taQ"></div>
+    <div><span class="ansbox" id="taAns"><span class="cur">|</span></span></div>
+  </div>
+  <div class="pad" id="taPad">
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key del" data-k="del">⌫</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key ok" data-k="ok">OK<br>✅</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k="0">0</button><button class="key" data-k=".">・</button>
+    <button class="key del" style="visibility:hidden">x</button>
+  </div>
+</section>
+
+<!-- CERT -->
+<section class="scr" id="scr-cert">
+  <div class="result"><div class="big">🎉 全クリア！ 🎉</div></div>
+  <div class="cert">
+    <h2>🏆 けいさんマスター認定証 🏆</h2>
+    <p>あなたは 3.14 の迷宮のすべてのボスをたおし、<br>
+    <b>円周率・分数・小数の計算</b>を武器にした<br>
+    ことをここに認定します。<br><br>
+    この力は、入試本番でそのまま使えます。<br>じしんを持って！</p>
+  </div>
+  <button class="btn" data-go="home" style="margin-top:16px">ホームへ</button>
+</section>
+
+</div>
+
+<script>
+"use strict";
+/* ================= data ================= */
+const R = x => Math.round(x*1e6)/1e6;
+const MUL_L=[4,8,2,16,5,12], MUL_T=[2.5,3.14,0.5,1.25,0.75,1.5];
+const DIV_L=[2,6,1,9,3,5],  DIV_T=[4,0.5,5,2.5,8,2];
+const ADD_L=[{v:.5},{f:[1,4]},{v:1.5},{f:[2,5]},{f:[5,8]},{v:.875}];
+const ADD_T=[{f:[1,2]},{v:.75},{f:[1,4]},{v:.6},{f:[3,8]},{v:.125}];
+const SUB_L=[10,6.28,4,12.56,7.5,5.14], SUB_T=[.86,3.14,.25,1.57,.75,.14];
+const val = o => typeof o==="number" ? o : (o.f ? o.f[0]/o.f[1] : o.v);
+const fmt = x => String(R(x));
+function dispOp(o){
+  if(typeof o!=="number" && o.f) return `<span class="frac"><span class="fn">${o.f[0]}</span><span class="fd">${o.f[1]}</span></span>`;
+  return fmt(val(o));
+}
+function buildPool(L,T,sym,fn){
+  const p=[];
+  for(const a of L) for(const b of T)
+    p.push({ha:dispOp(a),hb:dispOp(b),sym,ans:R(fn(val(a),val(b)))});
+  return p;
+}
+const POOLS = {
+  mul: buildPool(MUL_L,MUL_T,"×",(a,b)=>a*b),
+  div: buildPool(DIV_L,DIV_T,"÷",(a,b)=>a/b),
+  add: buildPool(ADD_L,ADD_T,"＋",(a,b)=>a+b),
+  sub: buildPool(SUB_L,SUB_T,"−",(a,b)=>a-b),
+};
+const dp = x => (String(x).split(".")[1]||"").length;
+function tierPool(pool,stage){ // stage 0..3 (3=boss)
+  const sorted=[...pool].sort((a,b)=> dp(a.ans)-dp(b.ans) || a.ans-b.ans);
+  if(stage===0) return sorted.slice(0,14);
+  if(stage===1) return sorted.slice(8,26);
+  return sorted;
+}
+const WORLDS=[
+ {id:"mul",name:"かけ算の森",em:"🌳",cls:"mul",
+  foes:[["🍄","キノコン"],["🐛","イモムシロウ"],["🦉","フクロウ博士"]],boss:["🐻","ボス グリズリー算"]},
+ {id:"div",name:"わり算の海",em:"🌊",cls:"div",
+  foes:[["🐙","タコヤン"],["🦀","カニカニ"],["🐡","フグマル"]],boss:["🦈","ボス ワリザメ"]},
+ {id:"add",name:"たし算の空",em:"☁️",cls:"add",
+  foes:[["🐤","ピヨスケ"],["🦅","ワシリン"],["👻","モクモク"]],boss:["⚡","ボス サンダーバード"]},
+ {id:"sub",name:"ひき算の火山",em:"🌋",cls:"sub",
+  foes:[["🦎","トカゲロン"],["🕷️","クモスケ"],["🦂","サソリーヌ"]],boss:["🐲","ボス マグマゴン"]},
+];
+const STAGE_CONF=[
+ {label:"ステージ1",enemies:2,hp:26},
+ {label:"ステージ2",enemies:3,hp:32},
+ {label:"ステージ3",enemies:3,hp:42},
+ {label:"ボス",enemies:1,hp:150},
+];
+const TOWER={hp:314,name:"ラスボス パイ・ドラゴン",em:"🐉"};
+const BUDDIES=[
+ {id:0,em:"🐰",n:"ぴょんこ",r:1},{id:1,em:"🐹",n:"ハムたろう",r:1},{id:2,em:"🐧",n:"ぺんぺん",r:1},
+ {id:3,em:"🍓",n:"いちごちゃん",r:1},{id:4,em:"🧸",n:"くまきち",r:1},{id:5,em:"🐨",n:"コアラン",r:1},
+ {id:6,em:"⭐️",n:"ほしまる",r:1},{id:7,em:"🎀",n:"リボンヌ",r:1},
+ {id:8,em:"🦊",n:"こんこん",r:2},{id:9,em:"🐼",n:"パンダイス",r:2},{id:10,em:"🐬",n:"イルカーラ",r:2},
+ {id:11,em:"🦋",n:"ちょうちょ姫",r:2},{id:12,em:"🐈","n":"ミケランジェロ",r:2},
+ {id:13,em:"🦄",n:"ユニコ",r:3},{id:14,em:"👑",n:"クイーンπ",r:3},{id:15,em:"🐲",n:"プチドラ",r:3},
+];
+const BUDDY_BONUS={1:2,2:5,3:10};
+const TA_GOAL={mul:"紙ドリル目標 3分",div:"紙ドリル目標 4分",add:"紙ドリル目標 5分",sub:"紙ドリル目標 5分"};
+const OP_NAME={mul:"かけ算",div:"わり算",add:"たし算",sub:"ひき算"};
+
+/* ================= save ================= */
+const DEF={lv:1,xp:0,coins:0,buddies:[],eq:-1,prog:{mul:0,div:0,add:0,sub:0},tower:false,bestCombo:0,ta:{mul:[],div:[],add:[],sub:[]},mute:false};
+let S;
+try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem("sansuQuest")||"{}"));}catch(e){S={...DEF};}
+S.prog=Object.assign({},DEF.prog,S.prog); S.ta=Object.assign({},DEF.ta,S.ta);
+const save=()=>localStorage.setItem("sansuQuest",JSON.stringify(S));
+
+/* ================= sound ================= */
+let AC=null;
+function beep(freq,dur,type="sine",vol=.15,when=0){
+  if(S.mute) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,AC.currentTime+when);
+    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+when+dur);
+    o.connect(g);g.connect(AC.destination);
+    o.start(AC.currentTime+when);o.stop(AC.currentTime+when+dur+.05);
+  }catch(e){}
+}
+const sfx={
+  tap:()=>beep(600,.06,"square",.06),
+  good:()=>{beep(660,.1);beep(880,.12,"sine",.15,.08);},
+  crit:()=>{beep(660,.08);beep(880,.08,"sine",.15,.06);beep(1320,.18,"sine",.18,.12);},
+  bad:()=>beep(160,.3,"sawtooth",.12),
+  die:()=>{beep(880,.08);beep(1100,.08,"sine",.14,.07);beep(1470,.2,"sine",.16,.14);},
+  clear:()=>{[523,659,784,1046].forEach((f,i)=>beep(f,.22,"sine",.16,i*.13));},
+  gacha:()=>{[784,988,1175,1568].forEach((f,i)=>beep(f,.15,"triangle",.14,i*.09));},
+  lvup:()=>{[523,659,784,880,1046].forEach((f,i)=>beep(f,.14,"triangle",.15,i*.08));},
+};
+
+/* ================= helpers ================= */
+const $=id=>document.getElementById(id);
+function go(id){
+  document.querySelectorAll(".scr").forEach(s=>s.classList.remove("on"));
+  $("scr-"+id).classList.add("on");
+  if(id==="home") renderHome();
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{sfx.tap();go(b.dataset.go);}));
+function toast(msg){
+  const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),1700);
+}
+function confetti(n=40){
+  const ems=["🎉","✨","⭐️","🌸","💜","💛"];
+  for(let i=0;i<n;i++){
+    const c=document.createElement("div");c.className="conf";
+    c.textContent=ems[Math.floor(Math.random()*ems.length)];
+    c.style.left=Math.random()*100+"vw";
+    c.style.animationDuration=(1.6+Math.random()*1.8)+"s";
+    c.style.animationDelay=(Math.random()*.6)+"s";
+    document.body.appendChild(c);setTimeout(()=>c.remove(),4200);
+  }
+}
+const xpNeed=lv=>50+lv*50;
+function addXp(n){
+  S.xp+=n;
+  while(S.xp>=xpNeed(S.lv)){S.xp-=xpNeed(S.lv);S.lv++;sfx.lvup();toast("🎉 レベルアップ！ Lv."+S.lv);}
+}
+const atkPower=()=>10+S.lv+(S.eq>=0?BUDDY_BONUS[BUDDIES[S.eq].r]:0);
+function starsStr(n,max=3){return "★".repeat(n)+"☆".repeat(max-n);}
+function fbShow(msg,color,sub=""){
+  $("fbmsg").textContent=msg;$("fbmsg").style.color=color;
+  $("fbsub").innerHTML=sub;
+  $("fb").classList.add("on");
+  setTimeout(()=>$("fb").classList.remove("on"), sub?1400:600);
+}
+
+/* ================= home ================= */
+function renderHome(){
+  $("pLv").textContent=S.lv;
+  $("pXp").style.width=Math.min(100,S.xp/xpNeed(S.lv)*100)+"%";
+  $("pCoins").textContent=S.coins;
+  $("pFace").textContent=S.eq>=0?BUDDIES[S.eq].em:"🧝‍♀️";
+  const g=$("worldGrid");g.innerHTML="";
+  WORLDS.forEach(w=>{
+    const b=document.createElement("button");
+    b.className="wbtn "+w.cls;
+    b.innerHTML=`<span class="em">${w.em}</span>${w.name}<span class="st">${starsStr(Math.min(S.prog[w.id],4)===4?3:0,3).slice(0,0)}${S.prog[w.id]>=4?"👑 クリア":"進行 "+S.prog[w.id]+"/4"}</span>`;
+    b.addEventListener("click",()=>{sfx.tap();openWorld(w.id);});
+    g.appendChild(b);
+  });
+  const all=WORLDS.every(w=>S.prog[w.id]>=4);
+  $("towerBtn").classList.toggle("locked",!all);
+  $("towerNote").textContent=all?(S.tower?"クリアずみ！ もう一度挑戦できる":"パイ・ドラゴンが待っている…"):"4つの世界のボスをたおすと開く";
+  $("muteBtn").textContent=S.mute?"🔇":"🔊";
+}
+$("muteBtn").addEventListener("click",()=>{S.mute=!S.mute;save();renderHome();});
+$("towerBtn").addEventListener("click",()=>{
+  if(!WORLDS.every(w=>S.prog[w.id]>=4)) return;
+  sfx.tap();startBattle("tower",3);
+});
+$("gachaBtn").addEventListener("click",()=>{sfx.tap();renderGacha();go("gacha");});
+$("zukanBtn").addEventListener("click",()=>{sfx.tap();renderZukan();go("zukan");});
+$("taBtn").addEventListener("click",()=>{sfx.tap();renderTaSel();go("tasel");});
+
+/* ================= stage select ================= */
+let curWorld=null;
+function openWorld(id){
+  curWorld=WORLDS.find(w=>w.id===id);
+  $("stTitle").textContent=curWorld.em+" "+curWorld.name;
+  const g=$("stGrid");g.innerHTML="";
+  STAGE_CONF.forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.className="stbtn"+(i===3?" bossb":"")+(S.prog[id]<i?" locked":"");
+    const em=i===3?curWorld.boss[0]:curWorld.foes[Math.min(i,2)][0];
+    const done=S.prog[id]>i;
+    b.innerHTML=`<span class="em">${em}</span>${c.label}<span class="stars">${done?"クリアずみ ✔":(S.prog[id]===i?"ここに挑戦！":"🔒")}</span>`;
+    b.addEventListener("click",()=>{sfx.tap();startBattle(id,i);});
+    g.appendChild(b);
+  });
+  go("stage");
+}
+
+/* ================= battle ================= */
+let B=null; // battle state
+function pickQ(){
+  let q;
+  do{ q=B.pool[Math.floor(Math.random()*B.pool.length)]; }
+  while(B.lastQ && q===B.lastQ && B.pool.length>1);
+  B.lastQ=q;return q;
+}
+function startBattle(worldId,stage){
+  const isTower=worldId==="tower";
+  const conf=STAGE_CONF[stage];
+  let pool, foes, hp;
+  if(isTower){
+    pool=[...POOLS.mul,...POOLS.div,...POOLS.add,...POOLS.sub];
+    foes=[[TOWER.em,TOWER.name]]; hp=TOWER.hp;
+  }else{
+    pool=tierPool(POOLS[worldId],stage);
+    const w=WORLDS.find(x=>x.id===worldId);
+    foes=stage===3?[w.boss]:Array.from({length:conf.enemies},(_,i)=>w.foes[i%w.foes.length]);
+    hp=conf.hp;
+  }
+  B={worldId,stage,pool,foes,hpMax:isTower?TOWER.hp:hp,idx:0,hearts:3,combo:0,best:0,
+     wrong:0,coins:0,xp:0,input:"",qStart:0,lastQ:null,lock:false,isTower};
+  B.eHp=B.hpMax;
+  $("bStage").textContent=isTower?"🗼 さいごの塔":WORLDS.find(x=>x.id===worldId).name+" "+conf.label;
+  $("bBuddy").textContent=S.eq>=0?BUDDIES[S.eq].em:"";
+  spawnEnemy();nextQ();updateHud();
+  go("battle");
+}
+function spawnEnemy(){
+  const f=B.foes[B.idx];
+  $("eName").textContent=f[1];
+  const face=$("eFace");face.classList.remove("die","hit");face.textContent=f[0];
+  face.style.fontSize=(B.stage===3||B.isTower)?"96px":"74px";
+  B.eHp=B.hpMax;updateEnemy();
+}
+function updateEnemy(){
+  $("eHp").style.width=Math.max(0,B.eHp/B.hpMax*100)+"%";
+  $("eHpTxt").textContent="HP "+Math.max(0,B.eHp)+" / "+B.hpMax;
+}
+function updateHud(){
+  $("hearts").textContent="❤️".repeat(B.hearts)+"🖤".repeat(3-B.hearts);
+  $("combo").textContent=B.combo>=2?"🔥コンボ ×"+B.combo:"";
+}
+function nextQ(){
+  const q=pickQ();B.q=q;B.input="";B.qStart=Date.now();
+  $("qText").innerHTML=`${q.ha}<span style="color:#7c5cff">${q.sym}</span>${q.hb}<span>=</span>`;
+  renderInput();
+}
+function renderInput(){
+  $("ansBox").innerHTML=(B.input||"")+'<span class="cur">|</span>';
+}
+function floatDmg(txt,crit){
+  const d=document.createElement("div");d.className="dmg"+(crit?" crit":"");d.textContent=txt;
+  d.style.left=(35+Math.random()*30)+"%";d.style.top=(28+Math.random()*20)+"%";
+  $("arena").appendChild(d);setTimeout(()=>d.remove(),850);
+}
+function submit(){
+  if(B.lock||!B.input) return;
+  const v=parseFloat(B.input);
+  if(isNaN(v)){B.input="";renderInput();return;}
+  if(Math.abs(v-B.q.ans)<1e-9){
+    const fast=(Date.now()-B.qStart)<5000;
+    B.combo++;B.best=Math.max(B.best,B.combo);
+    let mult=1+Math.min(B.combo,10)*.1;
+    let dmg=Math.round(atkPower()*mult*(fast?2:1));
+    B.eHp-=dmg;B.coins+=2+(fast?1:0);B.xp+=5;
+    fast?sfx.crit():sfx.good();
+    floatDmg(dmg+(fast?"!!":""),fast);
+    if(fast){$("flash").classList.remove("go");void $("flash").offsetWidth;$("flash").classList.add("go");}
+    const face=$("eFace");face.classList.remove("hit");void face.offsetWidth;face.classList.add("hit");
+    updateEnemy();updateHud();
+    if(B.eHp<=0){killEnemy();}else nextQ();
+  }else{
+    B.combo=0;B.hearts--;B.wrong++;sfx.bad();
+    document.body.classList.remove("shake");void document.body.offsetWidth;document.body.classList.add("shake");
+    fbShow("ミス！","#ff5e7a",`こたえは <b style="color:#ffd45e">${fmt(B.q.ans)}</b>`);
+    updateHud();
+    B.lock=true;
+    setTimeout(()=>{B.lock=false;
+      if(B.hearts<=0){endBattle(false);}else nextQ();
+    },1500);
+  }
+}
+function killEnemy(){
+  sfx.die();
+  $("eFace").classList.add("die");
+  B.lock=true;
+  setTimeout(()=>{
+    B.lock=false;B.idx++;
+    if(B.idx>=B.foes.length){endBattle(true);}
+    else{spawnEnemy();nextQ();}
+  },600);
+}
+function endBattle(win){
+  let stars=0,clearCoin=0;
+  if(win){
+    stars=B.wrong===0?3:(B.wrong<=2?2:1);
+    clearCoin=(B.isTower?100:(B.stage+1)*10)+stars*5;
+    B.coins+=clearCoin;B.xp+=B.isTower?80:(B.stage===3?60:30);
+    sfx.clear();confetti(B.stage===3||B.isTower?70:35);
+    if(B.isTower){ if(!S.tower){S.tower=true;} }
+    else if(S.prog[B.worldId]===B.stage){S.prog[B.worldId]=B.stage+1;}
+  }
+  S.coins+=B.coins;addXp(B.xp);
+  S.bestCombo=Math.max(S.bestCombo,B.best);
+  save();
+  if(win&&B.isTower){go("cert");return;}
+  $("rBig").textContent=win?(B.stage===3?"👑 ボスをたおした！":"クリア！"):"やられた…";
+  $("rStars").textContent=win?starsStr(stars):"";
+  $("rRew").innerHTML=win
+    ?`🪙 コイン +${B.coins}<br>✨ けいけんち +${B.xp}<br>🔥 さいだいコンボ ×${B.best}`
+    :`🪙 コイン +${B.coins}（ここまでの分はもらえるよ）<br>おしい！もう一度いけば勝てる！`;
+  $("rNext").textContent=win?"つぎへ ▶":"もういちど ⚔️";
+  $("rNext").onclick=()=>{
+    sfx.tap();
+    if(!win){startBattle(B.worldId,B.stage);return;}
+    if(B.isTower){go("home");return;}
+    if(B.stage<3){startBattle(B.worldId,B.stage+1);}
+    else{go("home");}
+  };
+  go("result");
+}
+document.querySelectorAll("#scr-battle .key").forEach(k=>{
+  k.addEventListener("click",()=>{
+    const key=k.dataset.k;sfx.tap();
+    if(key==="esc"){go("home");return;}
+    if(B===null||B.lock) return;
+    if(key==="ok"){submit();return;}
+    if(key==="del"){B.input=B.input.slice(0,-1);}
+    else if(B.input.length<8){
+      if(key==="."&&(B.input.includes(".")||!B.input)) {if(!B.input)B.input="0.";}
+      else B.input+=key;
+    }
+    renderInput();
+  });
+});
+
+/* ================= gacha ================= */
+function renderGacha(){$("gCoins").textContent=S.coins;$("gRes").style.display="none";$("egg").style.display="inline-block";$("pullBtn").disabled=S.coins<50;}
+$("pullBtn").addEventListener("click",()=>{
+  if(S.coins<50) return;
+  S.coins-=50;$("gCoins").textContent=S.coins;$("pullBtn").disabled=true;
+  const egg=$("egg");egg.style.display="inline-block";$("gRes").style.display="none";
+  egg.classList.remove("shake2");void egg.offsetWidth;egg.classList.add("shake2");
+  sfx.tap();
+  setTimeout(()=>{
+    const r=Math.random(), rar=r<.1?3:(r<.4?2:1);
+    const cand=BUDDIES.filter(b=>b.r===rar);
+    const b=cand[Math.floor(Math.random()*cand.length)];
+    const dup=S.buddies.includes(b.id);
+    if(dup){S.coins+=20;}else{S.buddies.push(b.id); if(S.eq<0)S.eq=b.id;}
+    save();
+    egg.style.display="none";
+    $("gEm").textContent=b.em;$("gName").textContent=b.n;
+    $("gRar").textContent="★".repeat(b.r);
+    $("gDup").textContent=dup?"もっている子だった！ 🪙20 もどってきた":"あたらしいなかま！";
+    $("gRes").style.display="block";
+    sfx.gacha();if(b.r===3)confetti(40);
+    $("gCoins").textContent=S.coins;$("pullBtn").disabled=S.coins<50;
+  },750);
+});
+
+/* ================= zukan ================= */
+function renderZukan(){
+  const g=$("zGrid");g.innerHTML="";
+  BUDDIES.forEach(b=>{
+    const own=S.buddies.includes(b.id);
+    const c=document.createElement("div");
+    c.className="zcell"+(own?"":" no")+(S.eq===b.id?" eq":"");
+    c.innerHTML=`<span class="ze">${b.em}</span><span class="zn">${own?b.n:"？？？"}</span><span class="zr">${"★".repeat(b.r)}</span>`;
+    if(own) c.addEventListener("click",()=>{sfx.tap();S.eq=b.id;save();renderZukan();});
+    g.appendChild(c);
+  });
+}
+
+/* ================= time attack ================= */
+let TA=null;
+function renderTaSel(){
+  const g=$("taGrid");g.innerHTML="";
+  [["mul","×","かけ算"],["div","÷","わり算"],["add","＋","たし算"],["sub","−","ひき算"]].forEach(([id,sym,name])=>{
+    const b=document.createElement("button");b.className="stbtn";
+    const best=S.ta[id][0];
+    b.innerHTML=`<span class="em">${sym}</span>${name}<span class="stars">${best?("ベスト "+taFmt(best)):"きろくなし"}</span>`;
+    b.addEventListener("click",()=>{sfx.tap();startTA(id);});
+    g.appendChild(b);
+  });
+  const rec=$("taRecs");
+  rec.innerHTML="<b>🏅 ベストタイム</b><br>"+["mul","div","add","sub"].map(id=>
+    OP_NAME[id]+"：" + (S.ta[id].length?S.ta[id].slice(0,3).map(taFmt).join(" / "):"まだなし") + "（"+TA_GOAL[id]+"）"
+  ).join("<br>");
+}
+const taFmt=s=>Math.floor(s/60)+"分"+(s%60).toFixed(1)+"秒";
+function startTA(id){
+  const qs=[...POOLS[id]].sort(()=>Math.random()-.5);
+  TA={id,qs,i:0,pen:0,input:"",t0:Date.now(),timer:null,lock:false};
+  $("taTitle").textContent=OP_NAME[id]+" 36問";
+  TA.timer=setInterval(()=>{
+    $("taTime").textContent=(((Date.now()-TA.t0)/1000)+TA.pen).toFixed(1);
+  },100);
+  taNext();go("ta");
+}
+function taNext(){
+  const q=TA.qs[TA.i];TA.input="";
+  $("taProg").textContent=(TA.i+1)+" / 36 もん　（ミス +5秒："+(TA.pen/5)+"回）";
+  $("taQ").innerHTML=`${q.ha}<span style="color:#7c5cff">${q.sym}</span>${q.hb}<span>=</span>`;
+  $("taAns").innerHTML='<span class="cur">|</span>';
+}
+function taSubmit(){
+  if(TA.lock||!TA.input) return;
+  const q=TA.qs[TA.i], v=parseFloat(TA.input);
+  if(Math.abs(v-q.ans)<1e-9){
+    sfx.good();TA.i++;
+    if(TA.i>=36){taEnd();return;}
+    taNext();
+  }else{
+    sfx.bad();TA.pen+=5;
+    fbShow("+5秒！","#ff5e7a",`こたえは <b style="color:#ffd45e">${fmt(q.ans)}</b>`);
+    TA.lock=true;TA.input="";$("taAns").innerHTML='<span class="cur">|</span>';
+    setTimeout(()=>{TA.lock=false;taNext();},1300);
+  }
+}
+function taEnd(){
+  clearInterval(TA.timer);
+  const sec=Math.round(((Date.now()-TA.t0)/1000+TA.pen)*10)/10;
+  S.ta[TA.id].push(sec);S.ta[TA.id].sort((a,b)=>a-b);S.ta[TA.id]=S.ta[TA.id].slice(0,5);
+  const isBest=S.ta[TA.id][0]===sec;
+  S.coins+=30;addXp(40);save();
+  sfx.clear();confetti(40);
+  $("rBig").textContent=isBest?"🏅 じこベスト！":"⏱️ ゴール！";
+  $("rStars").textContent=taFmt(sec);
+  $("rRew").innerHTML=`🪙 コイン +30　✨ けいけんち +40<br>${TA_GOAL[TA.id]}<br>ミス ${TA.pen/5} 回`;
+  $("rNext").textContent="もういちど ⏱️";
+  $("rNext").onclick=()=>{sfx.tap();startTA(TA.id);};
+  go("result");
+}
+$("taQuit").addEventListener("click",()=>{clearInterval(TA&&TA.timer);sfx.tap();renderTaSel();go("tasel");});
+document.querySelectorAll("#taPad .key").forEach(k=>{
+  k.addEventListener("click",()=>{
+    const key=k.dataset.k;if(!key)return;sfx.tap();
+    if(TA===null||TA.lock) return;
+    if(key==="ok"){taSubmit();return;}
+    if(key==="del"){TA.input=TA.input.slice(0,-1);}
+    else if(TA.input.length<8){
+      if(key==="."&&(TA.input.includes(".")||!TA.input)){if(!TA.input)TA.input="0.";}
+      else TA.input+=key;
+    }
+    $("taAns").innerHTML=(TA.input||"")+'<span class="cur">|</span>';
+  });
+});
+
+/* ================= keyboard ================= */
+document.addEventListener("keydown",e=>{
+  const inBattle=$("scr-battle").classList.contains("on");
+  const inTA=$("scr-ta").classList.contains("on");
+  if(!inBattle&&!inTA) return;
+  const st=inBattle?B:TA;
+  if(!st||st.lock) return;
+  const apply=(fn)=>{fn(); inBattle?renderInput():($("taAns").innerHTML=(TA.input||"")+'<span class="cur">|</span>');};
+  if(e.key>="0"&&e.key<="9"){apply(()=>{if(st.input.length<8)st.input+=e.key;});}
+  else if(e.key==="."){apply(()=>{if(!st.input)st.input="0.";else if(!st.input.includes("."))st.input+=".";});}
+  else if(e.key==="Backspace"){apply(()=>{st.input=st.input.slice(0,-1);});e.preventDefault();}
+  else if(e.key==="Enter"){inBattle?submit():taSubmit();}
+});
+
+renderHome();
+</script>
+</body>
+</html>
