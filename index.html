@@ -207,6 +207,29 @@ body.shake #battleBox{animation:bodyshake .3s}
 .tarec{background:#fffef4;border:3px solid #e8ddba;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:12px;line-height:1.9}
 #taTimeBig{font-size:40px;font-weight:900;text-align:center;color:#2a9d77}
 #taProg{text-align:center;font-weight:800;color:var(--brown2);font-size:12px;margin-bottom:4px}
+/* NPC住民 */
+.npc{position:absolute;transform:translate(-50%,-88%);text-align:center;cursor:pointer;z-index:5}
+.npc .nbody{display:inline-block;animation:bob 3.2s ease-in-out infinite}
+.npc img{height:74px;filter:drop-shadow(0 5px 4px #00000030);pointer-events:none}
+.npc .shadow{width:40px;height:9px;background:#00000022;border-radius:99px;margin:-5px auto 0}
+.npc .tag{font-size:11px;font-weight:800;background:#fff8e7ee;color:var(--brown);border-radius:99px;
+  padding:2px 8px;margin-bottom:2px;display:inline-block;box-shadow:0 2px 4px #00000025;white-space:nowrap}
+.npc .excl{position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;
+  font-weight:900;font-size:14px;border-radius:50%;width:24px;height:24px;line-height:24px;
+  box-shadow:0 2px 4px #00000035;animation:exclb 1s ease-in-out infinite}
+@keyframes exclb{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-7px)}}
+.bflyC{position:absolute;font-size:28px;cursor:pointer;z-index:5;animation:bflyf 7s ease-in-out infinite;
+  filter:drop-shadow(0 3px 3px #00000030)}
+.chick{position:absolute;font-size:24px;cursor:pointer;z-index:5;animation:bob 1.8s ease-in-out infinite;
+  filter:drop-shadow(0 3px 3px #00000030)}
+/* クイズ */
+#quizOv{align-items:center;padding:8px}
+#quizBox{width:100%;max-width:460px;background:var(--cream);border:4px solid var(--wood);border-radius:26px;
+  padding:14px 12px;box-shadow:0 10px 24px #00000040;animation:rise .25s}
+#qzHead{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;padding:0 4px 8px}
+#qzProg{color:var(--brown2);font-size:12px}
+/* 図鑑セクション */
+.zsec{font-weight:900;font-size:13px;margin:12px 0 2px;color:var(--brown2);border-left:4px solid var(--wood);padding-left:8px}
 /* dialog (story) */
 #dlgOv{position:fixed;inset:0;z-index:45;display:none;background:#00000038}
 #dlgOv.on{display:block}
@@ -372,8 +395,13 @@ body.shake #battleBox{animation:bodyshake .3s}
 <div class="ov" id="zukanOv">
   <div class="panel">
     <button class="closeb" data-close="zukanOv">とじる ✕</button>
-    <div class="ptitle">📖 なかま図鑑<small>タップでそうび！いっしょに島を歩けるよ</small></div>
+    <div class="ptitle">📖 島の図鑑<small>なかまはタップでそうび！いっしょに島を歩けるよ</small></div>
+    <div class="zsec">🧸 なかま</div>
     <div class="zgrid" id="zGrid"></div>
+    <div class="zsec">🐟 さかな（ケロ吉と つりをして あつめよう）</div>
+    <div class="zgrid" id="fishGrid"></div>
+    <div class="zsec">🦋 むし（ミミちゃんの おねがいで つかまえよう）</div>
+    <div class="zgrid" id="bugGrid"></div>
   </div>
 </div>
 
@@ -408,6 +436,26 @@ body.shake #battleBox{animation:bodyshake .3s}
       <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
       <button class="key" data-k="0">0</button><button class="key" data-k=".">・</button>
       <button class="key" style="visibility:hidden">x</button>
+    </div>
+  </div>
+</div>
+
+<!-- quiz (NPCイベント用) -->
+<div class="ov" id="quizOv">
+  <div id="quizBox">
+    <div id="qzHead"><b id="qzTitle"></b><span id="qzProg"></span></div>
+    <div class="qcard">
+      <div class="qtext" id="qzQ"></div>
+      <div><span class="ansbox" id="qzAns"><span class="cur">|</span></span></div>
+    </div>
+    <div class="pad" id="qzPad">
+      <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+      <button class="key del" data-k="del">⌫</button>
+      <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+      <button class="key ok" data-k="ok">こたえる ✨</button>
+      <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+      <button class="key" data-k="0">0</button><button class="key" data-k=".">・</button>
+      <button class="key esc" data-k="esc">やめる</button>
     </div>
   </div>
 </div>
@@ -514,14 +562,43 @@ const ZONE_BG={mul:"🌲🌳🍄🌲🌳🍄🌲🌳🍄🌲🌳🍄🌲🌳🍄
   tower:"⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙",ura:"🌀✨🌀✨🌀✨🌀✨🌀✨🌀✨🌀✨🌀✨🌀✨",
   moon:"🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️🌙⭐️"};
 
+/* ================= NPC・コレクション ================= */
+const NPCS={
+ elder:{name:"フクロウ長老",img:"assets/npc_elder.png",pos:[700,400],chat:[
+  "ワシは この島の長老じゃ。こまったら ワシに 話しかけるのじゃぞ。",
+  "3.14×8は 25.12。円の面積で 毎回でてくる。おぼえたもん勝ちじゃ。",
+  "0.25は 4分の1、0.75は 4分の3。分数と小数は なかよしじゃよ。",
+  "裏ステージの 平方数（11×11〜19×19）は 図形問題の たからものじゃ。",
+  "ゼロの魔王も もとは さみしがりやの 数じゃった…。"]},
+ mimi:{name:"ミミちゃん",img:"assets/npc_mimi.png",pos:[1010,510],chat:[
+  "ちょうちょって ひらひらしてて かわいいよね〜！",
+  "1÷8=0.125！ わたし これ すらすら言えるように なったの！",
+  "ガチャで ★3が でたら ぜったい おしえてね！",
+  "みずうみの 白鳥さん、まえは こわかったけど いまは やさしいの。"]},
+ bear:{name:"ベアさん",img:"assets/npc_bear.png",pos:[620,710],chat:[]},
+ mike:{name:"ミケ",img:"assets/npc_mike.png",pos:[950,710],chat:[
+  "きょうも おてがみ くばるにゃ！",
+  "2.5×4=10！ おかいけいの けいさんで つかうにゃよ。",
+  "島の どこかに おとしもの してないか、ときどき チェックするにゃ。"]},
+ kero:{name:"ケロ吉",img:"assets/npc_kero.png",pos:[1090,950],chat:[]},
+};
+const FISHES=[["🐟","コインぶな",1],["🐠","ナナイロちゃん",1],["🦀","よこばしり",1],["🐡","ハリちゃん",2],
+  ["🦑","スミちゃん",2],["🐙","たこすけ",2],["🦈","ちびザメ",3],["🐋","おおものクジラ",3]];
+const BUGS=[["🦋","モンシロちゃん",1],["🐝","ぶんぶん丸",1],["🐞","てんとうムスメ",1],
+  ["🦗","ぴょん吉",2],["🐜","はたらきアリさん",2],["✨","ホタルン",3]];
+const EASY_MIX=[...tierPool(POOLS.mul,0),...tierPool(POOLS.div,0),...tierPool(POOLS.add,0),...tierPool(POOLS.sub,0)];
+const ALL_MIX=[...POOLS.mul,...POOLS.div,...POOLS.add,...POOLS.sub];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
 /* ================= save ================= */
 const DEF={ver:2,lv:1,xp:0,coins:0,buddies:[],eq:-1,prog:{mul:0,div:0,add:0,sub:0},tower:false,
   ura:{mul:false,div:false,add:false,sub:false},final:false,intro:false,reveal:false,
+  q:{letter:0,bug:0,chick:0},bugCount:0,fishC:[],bugsC:[],buff:0,
   bestCombo:0,hits:0,ta:{mul:[],div:[],add:[],sub:[]},mute:false};
 let S;
 try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem("sansuQuest")||"{}"));}catch(e){S={...DEF};}
 S.prog=Object.assign({},DEF.prog,S.prog); S.ta=Object.assign({},DEF.ta,S.ta);
-S.ura=Object.assign({},DEF.ura,S.ura);
+S.ura=Object.assign({},DEF.ura,S.ura); S.q=Object.assign({},DEF.q,S.q);
 if(!S.ver){ // v1セーブ移行：旧4ステージ制→8ステージ制
   for(const k of ["mul","div","add","sub"]) if(S.prog[k]>=4) S.prog[k]=4; // ボス未撃破扱いでステージ5から
   S.tower=false; S.ver=2;
@@ -577,7 +654,7 @@ function addXp(n){
   S.xp+=n;
   while(S.xp>=xpNeed(S.lv)){S.xp-=xpNeed(S.lv);S.lv++;sfx.lvup();toast("🎉 レベルアップ！ Lv."+S.lv);}
 }
-const atkPower=()=>10+S.lv+(S.eq>=0?BUDDY_BONUS[BUDDIES[S.eq].r]:0);
+const atkPower=()=>10+S.lv+(S.eq>=0?BUDDY_BONUS[BUDDIES[S.eq].r]:0)+(S.buff||0);
 const starsStr=n=>"★".repeat(n)+"☆".repeat(3-n);
 const uraCount=()=>["mul","div","add","sub"].filter(k=>S.ura[k]).length;
 function fbShow(msg,color,sub=""){
@@ -695,7 +772,7 @@ world.appendChild(moonGate);
 // 塔
 const towerEl=document.createElement("div");towerEl.id="towerSpot";
 towerEl.innerHTML=`<div style="position:relative"><span class="b">🏰</span><span class="lock" id="towerLock">🔒</span></div><div class="tag" id="towerTag"></div>`;
-towerEl.style.left="800px";towerEl.style.top="600px";towerEl.style.zIndex=70;
+towerEl.style.left="800px";towerEl.style.top="600px";towerEl.style.zIndex=60;
 towerEl.addEventListener("click",ev=>{ev.stopPropagation();sfx.tap();approach(800,680,()=>tryTower());});
 world.appendChild(towerEl);
 [["☁️",0,26,80],["☁️",18,44,120],["⛅",55,36,95]].forEach(([em,top,dur,size],i)=>{
@@ -704,6 +781,251 @@ world.appendChild(towerEl);
   c.style.animationDelay=(-i*13)+"s";
   document.body.appendChild(c);
 });
+
+/* ================= NPC住民 ================= */
+const npcEls={};
+Object.entries(NPCS).forEach(([id,n])=>{
+  const e=document.createElement("div");e.className="npc";e.id="npc-"+id;
+  e.innerHTML=`<span class="excl" style="display:none">！</span><div class="tag">${n.name}</div>
+    <div class="nbody"><img src="${n.img}" alt=""></div><div class="shadow"></div>`;
+  e.style.left=n.pos[0]+"px";e.style.top=n.pos[1]+"px";e.style.zIndex=Math.floor(n.pos[1]/10)+1;
+  e.addEventListener("click",ev=>{ev.stopPropagation();sfx.tap();approach(n.pos[0],n.pos[1]+40,()=>npcTalk(id));});
+  world.appendChild(e);npcEls[id]=e;
+});
+function refreshNPC(){
+  const ex={
+    elder:S.q.letter===0,
+    mimi:S.q.letter===1||S.q.bug===0||(S.q.bug===1&&S.bugCount>=3),
+    bear:true,
+    mike:S.q.chick===0||S.q.chick===2,
+    kero:true,
+  };
+  Object.entries(ex).forEach(([id,on])=>{
+    const el=npcEls[id].querySelector(".excl");
+    el.style.display=on?"block":"none";
+    el.textContent=id==="bear"?"🍞":(id==="kero"?"🎣":"！");
+  });
+}
+
+/* ================= クイズ（NPCイベント用） ================= */
+let QZ=null;
+function startQuiz(title,pool,n){
+  return new Promise(res=>{
+    QZ={qs:[...pool].sort(()=>Math.random()-.5).slice(0,n),i:0,miss:0,input:"",lock:false,res};
+    $("qzTitle").textContent=title;
+    qzNext();openOv("quizOv");
+  });
+}
+function qzNext(){
+  const q=QZ.qs[QZ.i];QZ.input="";
+  $("qzProg").textContent=(QZ.i+1)+" / "+QZ.qs.length+" もん";
+  $("qzQ").innerHTML=`${q.ha}<span class="opsym">${q.sym}</span>${q.hb}<span>=</span>`;
+  $("qzAns").innerHTML='<span class="cur">|</span>';
+}
+function qzEnd(result){
+  closeOv("quizOv");
+  const r=QZ.res;QZ=null;r(result);
+}
+function qzSubmit(){
+  if(!QZ||QZ.lock||!QZ.input) return;
+  const q=QZ.qs[QZ.i], v=parseFloat(QZ.input);
+  if(Math.abs(v-q.ans)<1e-9){
+    sfx.good();S.hits++;QZ.i++;
+    if(QZ.i>=QZ.qs.length){qzEnd({miss:QZ.miss});return;}
+    qzNext();
+  }else{
+    sfx.bad();QZ.miss++;
+    fbShow("ミス！","#f2708a",`こたえは <b style="color:#ffd45e">${fmt(q.ans)}</b>`);
+    QZ.lock=true;QZ.input="";$("qzAns").innerHTML='<span class="cur">|</span>';
+    setTimeout(()=>{if(!QZ)return;QZ.lock=false;QZ.i++;
+      if(QZ.i>=QZ.qs.length){qzEnd({miss:QZ.miss});}else qzNext();
+    },1300);
+  }
+}
+document.querySelectorAll("#qzPad .key").forEach(k=>{
+  k.addEventListener("click",()=>{
+    const key=k.dataset.k;sfx.tap();
+    if(key==="esc"){if(QZ)qzEnd(null);return;}
+    if(!QZ||QZ.lock) return;
+    if(key==="ok"){qzSubmit();return;}
+    if(key==="del"){QZ.input=QZ.input.slice(0,-1);}
+    else if(QZ.input.length<8){
+      if(key==="."){if(!QZ.input)QZ.input="0.";else if(!QZ.input.includes("."))QZ.input+=".";}
+      else QZ.input+=key;
+    }
+    $("qzAns").innerHTML=(QZ.input||"")+'<span class="cur">|</span>';
+  });
+});
+
+/* ================= ちょうちょ・ヒヨコ ================= */
+let bflyEls=[];
+function spawnButterflies(){
+  clearButterflies();
+  for(let i=0;i<4;i++){
+    const x=250+Math.random()*1100, y=300+Math.random()*650;
+    const b=document.createElement("div");b.className="bflyC";
+    b.textContent=pick(["🦋","🐝","🐞","🦗"]);
+    b.style.left=x+"px";b.style.top=y+"px";b.style.animationDelay=(Math.random()*3)+"s";
+    b.addEventListener("click",ev=>{ev.stopPropagation();sfx.tap();
+      approach(parseFloat(b.style.left),parseFloat(b.style.top)+30,()=>catchBug(b));});
+    world.appendChild(b);bflyEls.push(b);
+  }
+}
+function clearButterflies(){bflyEls.forEach(b=>b.remove());bflyEls=[];}
+async function catchBug(b){
+  const r=await startQuiz("🦋 つかまえろ！",EASY_MIX,1);
+  if(r===null) return;
+  if(r.miss===0){
+    const w=[1,1,1,2,2,3], rar=pick(w);
+    const cand=BUGS.map((x,i)=>[x,i]).filter(([x])=>x[2]===rar);
+    const [bug,idx]=pick(cand);
+    b.remove();bflyEls=bflyEls.filter(x=>x!==b);
+    S.bugCount++;
+    const isNew=!S.bugsC.includes(idx);
+    if(isNew)S.bugsC.push(idx);
+    save();refreshNPC();
+    confetti(15);sfx.gacha();
+    await showDialog([["",`${bug[0]} ${bug[1]}を つかまえた！（${S.bugCount}/3）`+(isNew?" 🆕ずかんに とうろく！":"")]]);
+  }else{
+    const x=250+Math.random()*1100, y=300+Math.random()*650;
+    b.style.left=x+"px";b.style.top=y+"px";
+    toast("にげられた〜！");
+  }
+}
+let chickEl=null;
+function spawnChick(){
+  removeChick();
+  const spots=[[230,560],[1380,560],[780,950],[300,300],[1300,980],[660,260],[1420,420]];
+  const [x,y]=pick(spots);
+  chickEl=document.createElement("div");chickEl.className="chick";chickEl.textContent="🐥";
+  chickEl.style.left=x+"px";chickEl.style.top=y+"px";
+  chickEl.addEventListener("click",ev=>{ev.stopPropagation();sfx.tap();
+    approach(x,y+30,async()=>{
+      if(S.q.chick!==1) return;
+      S.q.chick=2;save();refreshNPC();
+      sfx.gacha();confetti(15);
+      removeChick();
+      await showDialog([["🐥 ぴーすけ","ぴよ〜！ みつけてくれて ありがとぴよ！"],["","ミケに ほうこくしよう！"]]);
+    });});
+  world.appendChild(chickEl);
+}
+function removeChick(){if(chickEl){chickEl.remove();chickEl=null;}}
+
+/* ================= NPC会話・イベント ================= */
+async function npcTalk(id){
+  const n=NPCS[id];
+  if(id==="elder"){
+    if(S.q.letter===0){
+      await showDialog([
+        [n.name,"おお、ぼうけんしゃさん。ちょうど よかったのじゃ。"],
+        [n.name,"この手紙を うさぎの ミミちゃんに とどけて くれんかのう？"],
+        ["","📮 ミミちゃんへの 手紙を あずかった！（みずうみの ちかくに いるよ）"],
+      ]);
+      S.q.letter=1;save();refreshNPC();
+    }else if(S.q.letter===1){
+      await showDialog([[n.name,"ミミちゃんは みずうみの ちかくに おるぞい。よろしく たのむのじゃ。"]]);
+    }else{
+      await showDialog([[n.name,pick(n.chat)]]);
+    }
+  }
+  else if(id==="mimi"){
+    if(S.q.letter===1){
+      await showDialog([
+        [n.name,"え、わたしに 手紙？ 長老から？ わ〜い ありがとう！"],
+        [n.name,"おれいに クイズ大会 しよっ！ 3問 せいかいで ごほうびだよ♪"],
+      ]);
+      const r=await startQuiz("💌 おれいのクイズ",EASY_MIX,3);
+      if(r===null){await showDialog([[n.name,"また あとで やろうね！"]]);return;}
+      S.q.letter=2;S.coins+=60;save();refreshNPC();updateHudBar();
+      confetti(25);sfx.clear();
+      await showDialog([
+        [n.name,r.miss===0?"全問せいかい！ すごーい！！":"クリア〜！ つぎは 全問せいかい ねらってね！"],
+        ["","🪙 60コインを もらった！"],
+      ]);
+    }else if(S.q.bug===0){
+      await showDialog([
+        [n.name,"ねえねえ、おねがいが あるの！"],
+        [n.name,"島の むしを 3匹 つかまえて きてほしいな。ずかんにも のるよ！"],
+        ["","🦋 島の あちこちに むしが あらわれた！ タップで ちかづいて つかまえよう"],
+      ]);
+      S.q.bug=1;S.bugCount=0;save();refreshNPC();
+      spawnButterflies();
+    }else if(S.q.bug===1&&S.bugCount>=3){
+      S.q.bug=0;S.coins+=40;save();refreshNPC();updateHudBar();
+      clearButterflies();
+      confetti(25);sfx.clear();
+      await showDialog([
+        [n.name,"わ〜！ 3匹も つかまえてくれたの！？ ありがとう！"],
+        ["","🪙 40コインを もらった！（また たのまれると むしとり できるよ）"],
+      ]);
+    }else if(S.q.bug===1){
+      await showDialog([[n.name,`むしとり がんばってる？ いま ${S.bugCount}/3匹だよ！`]]);
+    }else{
+      await showDialog([[n.name,pick(n.chat)]]);
+    }
+  }
+  else if(id==="bear"){
+    await showDialog([
+      [n.name,"いらっしゃい！ パンの おかいけい、てつだって くれるかい？"],
+      [n.name,"3問 せいかいで やきたてパンの ちからを あげちゃうよ。"],
+    ]);
+    const r=await startQuiz("🍞 パンのおかいけい",POOLS.mul,3);
+    if(r===null){await showDialog([[n.name,"また おいでよ〜！"]]);return;}
+    const coins=Math.max(10,30-r.miss*10);
+    S.coins+=coins;
+    let extra="";
+    if(r.miss===0){S.buff=5;extra="さらに 🍞パンパワー（つぎのバトル こうげき+5）！";}
+    save();updateHudBar();
+    sfx.clear();confetti(20);
+    await showDialog([
+      [n.name,r.miss===0?"かんぺき！ さすがだね！":"おつかれさま！ また ちょうせん してね。"],
+      ["",`🪙 ${coins}コインを もらった！ ${extra}`],
+    ]);
+  }
+  else if(id==="mike"){
+    if(S.q.chick===0){
+      await showDialog([
+        [n.name,"たいへんにゃ！ ヒヨコの ぴーすけが まいごに なったにゃ！"],
+        [n.name,"島の どこかに かくれてるはず。みつけて ほしいにゃ〜！"],
+        ["","🐥 ぴーすけを さがそう！（島の すみっこも チェック）"],
+      ]);
+      S.q.chick=1;save();refreshNPC();
+      spawnChick();
+    }else if(S.q.chick===1){
+      await showDialog([[n.name,"まだ みつからないにゃ？ 木や 岩の ちかくも さがすにゃ！"]]);
+    }else if(S.q.chick===2){
+      S.q.chick=0;S.coins+=40;save();refreshNPC();updateHudBar();
+      confetti(25);sfx.clear();
+      await showDialog([
+        [n.name,"ぴーすけ！ ぶじで よかったにゃ〜！ ありがとにゃ！"],
+        ["","🪙 40コインを もらった！（ぴーすけは また まいごに なるかも…）"],
+      ]);
+    }
+  }
+  else if(id==="kero"){
+    await showDialog([
+      [n.name,"よう。しずかで いい つりびよりだケロ。"],
+      [n.name,"1問 せいかいしたら さかなが つれるケロよ。"],
+    ]);
+    const r=await startQuiz("🎣 フィッシング",ALL_MIX,1);
+    if(r===null){await showDialog([[n.name,"またおいでケロ。"]]);return;}
+    if(r.miss===0){
+      const w=[1,1,1,1,2,2,2,3], rar=pick(w);
+      const cand=FISHES.map((x,i)=>[x,i]).filter(([x])=>x[2]===rar);
+      const [fish,idx]=pick(cand);
+      const isNew=!S.fishC.includes(idx);
+      if(isNew){S.fishC.push(idx);}else{S.coins+=5;}
+      save();updateHudBar();
+      sfx.gacha();confetti(20);
+      await showDialog([
+        ["",`${fish[0]} ${fish[1]}を つりあげた！${"★".repeat(fish[2])}`],
+        [n.name,isNew?"おっ、ずかんに 🆕とうろくだケロ！":"それは 2匹目だケロ。🪙5コインに かえておいたケロ。"],
+      ]);
+    }else{
+      await showDialog([[n.name,"ありゃ、にげられたケロ。また ちょうせんだケロ！"]]);
+    }
+  }
+}
 
 function refreshWorld(){
   WORLDS.forEach(w=>{
@@ -733,6 +1055,7 @@ function refreshWorld(){
   $("towerTag").textContent=all?(S.tower?"👑 パイ・ドラゴン（もういちど）":"🐉 パイ・ドラゴンにちょうせん！"):"🔒 4つの世界をクリアで開く";
   moonGate.style.display=S.tower?"block":"none";
   $("moonTag").textContent=S.final?"👑 月のゲート（もういちど）":(uraCount()>=4?"✨ ゲートがひらいた…！":"🔒 星のかけら "+uraCount()+"/4");
+  refreshNPC();
   updateHudBar();
 }
 
@@ -946,6 +1269,7 @@ function endBattle(win){
   }
   S.coins+=B.coins;addXp(B.xp);
   S.bestCombo=Math.max(S.bestCombo,B.best);
+  if(S.buff){S.buff=0;toast("🍞 パンパワーが きれた");}
   save();refreshWorld();
   // ストーリー分岐
   if(win&&kind==="final"){startEnding();return;}
@@ -1036,7 +1360,7 @@ function startEnding(){
       st.style.animationDelay=(Math.random()*2)+"s";es.appendChild(st);
     }
     // 統計
-    $("endStats").innerHTML=`Lv.${S.lv}　🔥さいだいコンボ ×${S.bestCombo}<br>これまでの正解 ${S.hits} 問　なかま ${S.buddies.length}/17`;
+    $("endStats").innerHTML=`Lv.${S.lv}　🔥さいだいコンボ ×${S.bestCombo}　これまでの正解 ${S.hits} 問<br>なかま ${S.buddies.length}/17　さかな ${S.fishC.length}/8　むし ${S.bugsC.length}/6`;
     // パレード（もっているなかま総出）
     const pd=$("parade");pd.innerHTML="";
     S.buddies.slice(0,12).forEach((id,i)=>{
@@ -1102,6 +1426,18 @@ function renderZukan(){
     if(own) c.addEventListener("click",()=>{sfx.tap();S.eq=b.id;save();renderZukan();updateHudBar();});
     g.appendChild(c);
   });
+  const fill=(gridId,list,ownedArr)=>{
+    const gr=$(gridId);gr.innerHTML="";
+    list.forEach((f,i)=>{
+      const own=ownedArr.includes(i);
+      const c=document.createElement("div");
+      c.className="zcell"+(own?"":" no");
+      c.innerHTML=`<span class="ze">${f[0]}</span><span class="zn">${own?f[1]:"？？？"}</span><span class="zr">${"★".repeat(f[2])}</span>`;
+      gr.appendChild(c);
+    });
+  };
+  fill("fishGrid",FISHES,S.fishC);
+  fill("bugGrid",BUGS,S.bugsC);
 }
 
 /* ================= time attack ================= */
@@ -1188,18 +1524,25 @@ document.addEventListener("keydown",e=>{
   }
   const inBattle=$("battleOv").classList.contains("on");
   const inTA=$("taOv").classList.contains("on");
-  if(!inBattle&&!inTA) return;
-  const st=inBattle?B:TA;
+  const inQZ=$("quizOv").classList.contains("on");
+  if(!inBattle&&!inTA&&!inQZ) return;
+  const st=inBattle?B:(inTA?TA:QZ);
   if(!st||st.lock) return;
-  const rend=()=>{inBattle?renderInput():($("taAns").innerHTML=(TA.input||"")+'<span class="cur">|</span>');};
+  const rend=()=>{
+    if(inBattle)renderInput();
+    else if(inTA)$("taAns").innerHTML=(TA.input||"")+'<span class="cur">|</span>';
+    else $("qzAns").innerHTML=(QZ.input||"")+'<span class="cur">|</span>';
+  };
   if(e.key>="0"&&e.key<="9"){if(st.input.length<8)st.input+=e.key;rend();}
   else if(e.key==="."){if(!st.input)st.input="0.";else if(!st.input.includes("."))st.input+=".";rend();}
   else if(e.key==="Backspace"){st.input=st.input.slice(0,-1);rend();e.preventDefault();}
-  else if(e.key==="Enter"){inBattle?submit():taSubmit();}
+  else if(e.key==="Enter"){inBattle?submit():(inTA?taSubmit():qzSubmit());}
 });
 
 /* ================= boot ================= */
 refreshWorld();
+if(S.q.bug===1) spawnButterflies();   // リロード後もクエスト継続
+if(S.q.chick===1) spawnChick();
 if(!S.intro){
   setTimeout(()=>{
     showDialog([
@@ -1207,6 +1550,7 @@ if(!S.intro){
       ["","ある日『ゼロの魔王』が あらわれ、島のモンスターたちに のろいを かけてしまった…"],
       ["","のろいを とけるのは たったひとつ、『けいさんの力』だけ。"],
       ["","モンスターに 近づいて タップ！ 正しいこたえで みんなを たすけてあげよう！"],
+      ["","島には なかまの住民も くらしているよ。話しかけると おねがいごとを たのまれるかも…！"],
     ]).then(()=>{S.intro=true;save();});
   },600);
 }
