@@ -111,11 +111,24 @@ body{font-family:"Hiragino Maru Gothic ProN","Rounded Mplus 1c","Yu Gothic",sans
   background:var(--cream);border:3px solid var(--wood);border-radius:14px;padding:6px 10px;cursor:pointer;
   box-shadow:0 3px 0 var(--wood2)}
 #dock{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:12px}
-.dockb{width:62px;height:62px;border-radius:20px;background:var(--cream);border:3px solid var(--wood);
-  box-shadow:0 5px 0 var(--wood2),0 8px 14px #00000025;font-size:24px;cursor:pointer;
+.dockb{width:58px;height:58px;border-radius:18px;background:var(--cream);border:3px solid var(--wood);
+  box-shadow:0 5px 0 var(--wood2),0 8px 14px #00000025;font-size:22px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--brown)}
 .dockb span{font-size:9px;font-weight:800}
 .dockb:active{transform:translateY(3px);box-shadow:0 2px 0 var(--wood2)}
+.dockb.main{background:linear-gradient(180deg,#ffb0c8,#ff97b5);border-color:#d66d8d;color:#fff;
+  animation:qpulse 2s ease-in-out infinite}
+@keyframes qpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+/* すぐとっくんメニュー */
+.qrow{display:flex;align-items:center;gap:10px;background:#fffef4;border:3px solid #e8ddba;border-radius:16px;
+  padding:10px 12px;margin-top:8px;cursor:pointer;width:100%;text-align:left;font-family:inherit}
+.qrow:active{transform:translateY(2px)}
+.qrow .qem{font-size:28px}
+.qrow .qinfo{flex:1;font-size:14px;font-weight:900;color:var(--brown);line-height:1.4}
+.qrow .qinfo small{display:block;font-size:10px;color:var(--brown2);font-weight:700}
+.qrow .qgo{font-size:16px;font-weight:900;color:var(--pink)}
+.qrow.reco{background:linear-gradient(180deg,#fff3d1,#ffe9b0);border-color:var(--gold)}
+.qrow.reco .qbadge{background:var(--red);color:#fff;font-size:9px;font-weight:900;border-radius:99px;padding:2px 8px}
 #hint{position:fixed;bottom:calc(86px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:19;
   background:#fff8e7ee;border-radius:18px;padding:7px 16px;font-size:12px;font-weight:800;color:var(--brown);
   box-shadow:0 3px 8px #00000025;max-width:92vw;text-align:center;line-height:1.6;transition:opacity .5s}
@@ -320,6 +333,7 @@ body.shake #battleBox{animation:bodyshake .3s}
 <div id="mapName"></div>
 <button id="muteBtn">🔊</button>
 <div id="dock">
+  <button class="dockb main" id="quickBtn">⚔️<span>とっくん</span></button>
   <button class="dockb" id="mockBtn">🎓<span>もし</span></button>
   <button class="dockb" id="taBtn">⏱️<span>タイム</span></button>
   <button class="dockb" id="gachaBtn">🥚<span>ガチャ</span></button>
@@ -483,6 +497,15 @@ body.shake #battleBox{animation:bodyshake .3s}
       <button class="key" data-k="0">0</button><button class="key" data-k=".">・</button>
       <button class="key esc" data-k="esc">やめる</button>
     </div>
+  </div>
+</div>
+
+<!-- すぐとっくんメニュー -->
+<div class="ov" id="quickOv">
+  <div class="panel">
+    <button class="closeb" data-close="quickOv">🏝️ 島をあるく ✕</button>
+    <div class="ptitle">⚔️ すぐとっくん<small>あるかなくても ここから すぐ とける！</small></div>
+    <div id="quickList"></div>
   </div>
 </div>
 
@@ -1250,7 +1273,7 @@ function refreshNPC(){
 }
 
 /* ================= movement & encounters ================= */
-const P={x:600,y:620,tx:600,ty:620,speed:210,onArrive:null};
+const P={x:600,y:620,tx:600,ty:620,speed:280,onArrive:null};
 const keys={};
 document.addEventListener("keydown",e=>{keys[e.key]=true;});
 document.addEventListener("keyup",e=>{keys[e.key]=false;});
@@ -1270,7 +1293,7 @@ function clampPos(x,y){
 function walkTo(x,y,cb){[x,y]=clampPos(x,y);P.tx=x;P.ty=y;P.onArrive=cb;}
 function approach(x,y,cb){
   const d=Math.hypot(P.x-x,P.y-y);
-  if(d<110){cb();return;}
+  if(d<170){cb();return;} // 近ければ すぐ話しかけられる
   walkTo(x,y,cb);
 }
 let camX=0,camY=0,lastDust=0,prevT=performance.now(),lastFrame=0;
@@ -1968,6 +1991,39 @@ function renderZukan(){
 let TA=null;
 $("taBtn").addEventListener("click",()=>{sfx.tap();renderTaSel();openOv("taselOv");});
 $("mockBtn").addEventListener("click",()=>{sfx.tap();startMock();});
+
+/* ================= すぐとっくん（1タップで問題へ） ================= */
+$("quickBtn").addEventListener("click",()=>{sfx.tap();openQuick();});
+function recoTarget(){
+  if(S.prog.calc<8)return{id:"calc",why:"模試の 大問1に いちばん きく！"};
+  const w=WORLDS.filter(x=>!x.noCrest).sort((a,b)=>S.prog[a.id]-S.prog[b.id])[0];
+  if(S.prog[w.id]<8)return{id:w.id,why:"もんしょうを あつめよう！"};
+  return{id:"mock",why:"ランクSを ねらおう！"};
+}
+function qrow({em,title,sub,badge,cls,onTap}){
+  const b=document.createElement("button");b.className="qrow"+(cls?" "+cls:"");
+  b.innerHTML=`<span class="qem">${em}</span><span class="qinfo">${title}${badge?` <span class="qbadge">${badge}</span>`:""}<small>${sub}</small></span><span class="qgo">▶</span>`;
+  b.addEventListener("click",()=>{sfx.tap();closeOv("quickOv");onTap();});
+  return b;
+}
+function openQuick(){
+  const list=$("quickList");list.innerHTML="";
+  const reco=recoTarget();
+  const rowDefs=[];
+  // おすすめを先頭に
+  const defOf=id=>{
+    if(id==="mock"){const mb=S.mock[0];
+      return{em:"🎓",title:"模試の門（大問1・7分）",sub:mb?`ベスト ${mb.score}/6｜全国正答率とゴースト勝負`:"本番形式に ちょうせん！",onTap:()=>startMock()};}
+    if(id==="calc")return{em:"🗼",title:"ぎゃくざんの塔",sub:S.prog.calc>=8?"👑クリアずみ（ボスと もういちど）":`おく ${Math.min(S.prog.calc,7)}/8｜分数と ぎゃくざん とっくん`,onTap:()=>tryBattle("calc")};
+    const w=WORLDS.find(x=>x.id===id);
+    return{em:w.boss[0],title:w.name,sub:S.prog[id]>=8?"👑クリアずみ（ボスと もういちど）":`おく ${Math.min(S.prog[id],7)}/8`,onTap:()=>tryBattle(id)};
+  };
+  const recoDef=defOf(reco.id);
+  list.appendChild(qrow({...recoDef,title:"きょうのおすすめ："+recoDef.title,sub:reco.why,badge:"おすすめ",cls:"reco"}));
+  ["mock","calc","mul","div","sub","add"].filter(id=>id!==reco.id).forEach(id=>list.appendChild(qrow(defOf(id))));
+  list.appendChild(qrow({em:"⏱️",title:"タイムアタック",sub:"紙ドリルと同じ36問で じこベスト更新",onTap:()=>{renderTaSel();openOv("taselOv");}}));
+  openOv("quickOv");
+}
 const taFmt=s=>Math.floor(s/60)+"分"+(s%60).toFixed(1)+"秒";
 function renderTaSel(){
   const g=$("taGrid");g.innerHTML="";
@@ -2157,9 +2213,11 @@ if(!S.intro){
       ["フクロウ長老","ゆうしゃよ。フィールドの さきにある 4つの めいきゅうに むかい…"],
       ["フクロウ長老","おくに いる ボスから もんしょうを とりもどして くれい！"],
       ["","のろいを とけるのは『けいさんの力』だけ。モンスターに 近づいて タップだ！"],
-      ["","村の みんなに 話しかけると おねがいごとや お店も あるよ。"],
-    ]).then(()=>{S.intro=true;save();});
+      ["","いそぐときは 下の ⚔️とっくんボタンから すぐ たたかえるよ！"],
+    ]).then(()=>{S.intro=true;save();openQuick();});
   },600);
+}else{
+  setTimeout(()=>openQuick(),400); // 起動したら すぐ問題へ
 }
 </script>
 </body>
